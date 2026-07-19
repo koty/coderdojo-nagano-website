@@ -1,0 +1,25 @@
+{
+  "name": "coderdojo-nagano-website",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "wrangler pages dev .",
+    "deploy": "wrangler pages deploy ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/koty/coderdojo-nagano-website.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/koty/coderdojo-nagano-website/issues"
+  },
+  "homepage": "https://github.com/koty/coderdojo-nagano-website#readme",
+  "devDependencies": {
+    "wrangler": "^4.112.0"
+  }
+}
