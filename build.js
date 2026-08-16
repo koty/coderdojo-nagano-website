@@ -23,13 +23,12 @@ const assets = [
 function build() {
   console.log('Building website with archives...');
 
-  // 必要なディレクトリの作成
-  if (!fs.existsSync(distDir)) {
-    fs.mkdirSync(distDir, { recursive: true });
+  // 出力ディレクトリの初期化（クリーン）
+  if (fs.existsSync(distDir)) {
+    fs.rmSync(distDir, { recursive: true, force: true });
   }
-  if (!fs.existsSync(postsDistDir)) {
-    fs.mkdirSync(postsDistDir, { recursive: true });
-  }
+  fs.mkdirSync(distDir, { recursive: true });
+  fs.mkdirSync(postsDistDir, { recursive: true });
 
   // 1. posts/ 内のマークダウンファイルを全スキャン
   if (!fs.existsSync(postsSrcDir)) {
