@@ -125,6 +125,14 @@ function build() {
     }
   });
 
+  // images ディレクトリが存在する場合は dist/images にコピー
+  const imagesSrcDir = path.join(__dirname, 'images');
+  const imagesDistDir = path.join(distDir, 'images');
+  if (fs.existsSync(imagesSrcDir)) {
+    fs.cpSync(imagesSrcDir, imagesDistDir, { recursive: true });
+    console.log('Copied images/ to dist/images/');
+  }
+
   console.log('Build completed successfully!');
 }
 
