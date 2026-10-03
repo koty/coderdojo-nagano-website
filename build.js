@@ -3,6 +3,10 @@ const path = require('path');
 const { marked } = require('marked');
 
 // 設定
+const siteBaseUrl = 'https://coderdojo-nagano.koty.dev';
+const defaultSiteImage = `${siteBaseUrl}/logo.jpg`;
+const defaultSiteDescription = '長野市で活動する、子どもたちのための無料プログラミングクラブ「CoderDojo長野」のWebサイトです。';
+
 const srcDir = path.join(__dirname, 'src');
 const distDir = path.join(__dirname, 'dist');
 const postsSrcDir = path.join(__dirname, 'posts');
@@ -19,6 +23,55 @@ const assets = [
   'apple-touch-icon.png',
   'champion-img.jpg'
 ];
+
+function escapeHtmlAttr(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function extractDescription(mdContent) {
+  const plainText = mdContent
+    .replace(/^#+\s.*$/gm, '') // Remove headers
+    .replace(/!\[.*?\]\(.*?\)/g, '') // Remove images
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Keep link text
+    .replace(/https?:\/\/\S+/g, '') // Remove bare URLs
+    .replace(/[*_~`>#-]/g, '') // Remove markdown formatting chars
+    .replace(/\s+/g, ' ') // Collapse whitespace
+    .trim();
+
+  if (plainText.length > 120) {
+    return plainText.slice(0, 117) + '...';
+  }
+  return plainText || defaultSiteDescription;
+}
+
+function extractImage(mdContent) {
+  const match = mdContent.match(/!\[.*?\]\((.*?)\)/);
+  if (match) {
+    let imgUrl = match[1].trim();
+    if (!imgUrl.startsWith('http://') && !imgUrl.startsWith('https://')) {
+      if (!imgUrl.startsWith('/')) {
+        imgUrl = '/' + imgUrl;
+      }
+      return {
+        url: `${siteBaseUrl}${imgUrl}`,
+        cardType: 'summary_large_image'
+      };
+    }
+    return {
+      url: imgUrl,
+      cardType: 'summary_large_image'
+    };
+  }
+  return {
+    url: defaultSiteImage,
+    cardType: 'summary'
+  };
+}
 
 function build() {
   console.log('Building website with archives...');
@@ -70,9 +123,18 @@ function build() {
     const htmlFileName = `${baseName}.html`;
     const postOutputPath = path.join(postsDistDir, htmlFileName);
 
+    // OGPメタデータの抽出
+    const description = extractDescription(mdContent);
+    const imageInfo = extractImage(mdContent);
+    const postUrl = `${siteBaseUrl}/posts/${htmlFileName}`;
+
     // 個別ポストHTMLの作成
     let postHtml = postTemplate
-      .replace('<!-- %POST_TITLE% -->', title)
+      .replaceAll('<!-- %POST_TITLE% -->', escapeHtmlAttr(title))
+      .replaceAll('<!-- %POST_DESCRIPTION% -->', escapeHtmlAttr(description))
+      .replaceAll('<!-- %POST_URL% -->', escapeHtmlAttr(postUrl))
+      .replaceAll('<!-- %POST_IMAGE% -->', escapeHtmlAttr(imageInfo.url))
+      .replaceAll('<!-- %TWITTER_CARD% -->', escapeHtmlAttr(imageInfo.cardType))
       .replace('<!-- %POST_CONTENT% -->', parsedHtml);
 
     fs.writeFileSync(postOutputPath, postHtml, 'utf8');
